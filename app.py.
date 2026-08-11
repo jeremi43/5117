@@ -1,0 +1,125 @@
+import streamlit as st
+import time
+
+# 1. Konfiguracja strony
+st.set_page_config(
+    page_title="Rada AI - ChatGPT, Claude, Gemini, Grok",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Customowy styl CSS (Ciemny motyw + stylizacja czatu)
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #0e1117;
+        color: #ffffff;
+    }
+    .main-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #4A90E2, #9013FE, #FF007F);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    .badge-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+    .badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .gpt { background-color: #10a37f22; color: #10a37f; border: 1px solid #10a37f; }
+    .claude { background-color: #d9770622; color: #f59e0b; border: 1px solid #f59e0b; }
+    .gemini { background-color: #2563eb22; color: #60a5fa; border: 1px solid #60a5fa; }
+    .grok { background-color: #ffffff22; color: #ffffff; border: 1px solid #ffffff; }
+    </style>
+""", unsafe_allow_html=True)
+
+# 2. Panel boczny (Sidebar)
+with st.sidebar:
+    st.title("⚙️ Panel Sterowania")
+    st.markdown("---")
+    st.subheader("💡 O aplikacji")
+    st.write("Twoja wiadomość trafia jednocześnie do 4 modeli. Po zebraniu odpowiedzi organizowana jest debata i generowana jedna, optymalna odpowiedź.")
+    
+    st.markdown("---")
+    st.subheader("🤖 Skład Rady:")
+    st.markdown("- **ChatGPT** (OpenAI)")
+    st.markdown("- **Claude** (Anthropic)")
+    st.markdown("- **Gemini** (Google)")
+    st.markdown("- **Grok** (xAI)")
+    
+    st.markdown("---")
+    if st.button("🗑️ Wyczyść historię rozmowy", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
+
+# 3. Nagłówek główny
+st.markdown('<div class="main-title">🤖 Multi-AI Council</div>', unsafe_allow_html=True)
+st.markdown("""
+<div class="badge-container">
+    <span class="badge gpt">🟢 ChatGPT</span>
+    <span class="badge claude">🟠 Claude</span>
+    <span class="badge gemini">🔵 Gemini</span>
+    <span class="badge grok">⚪ Grok</span>
+</div>
+""", unsafe_allow_html=True)
+
+# 4. Inicjalizacja bazy historii w pamięci podręcznej (Session State)
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Wyświetlanie dotychczasowych wiadomości
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# 5. Pole wpisywania nowej wiadomości
+if user_input := st.chat_input("Wpisz pytanie do Rady AI..."):
+    # Zapisz i wyświetl pytanie użytkownika
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
+
+    # Odpowiedź Asystenta (Rady AI)
+    with st.chat_message("assistant"):
+        # Pasek postępu debaty
+        with st.status("🧠 Trwa narada modeli AI...", expanded=True) as status:
+            st.write("🟢 **ChatGPT:** Analizuję zapytanie i tworzę wstępną hipotezę...")
+            time.sleep(1.2)
+            st.write("🔵 **Gemini:** Weryfikuję dane i uzupełniam kontekst...")
+            time.sleep(1.2)
+            st.write("🟠 **Claude:** Szlifuję strukturę i styl odpowiedzi...")
+            time.sleep(1.2)
+            st.write("⚪ **Grok:** Sprawdzam pod kątem krytycznym i dodaję perspektywę...")
+            time.sleep(1.2)
+            st.write("⚖️ **Przewodniczący Rady:** Synteza i wybór najlepszych wniosków...")
+            time.sleep(1)
+            status.update(label="✅ Debata zakończona! Wygenerowano konsensus.", state="complete", expanded=False)
+
+        # Symulacja ostatecznej odpowiedzi
+        mock_response = f"""### 🏛️ Wspólny Konsensus Rady AI
+
+Na podstawie debaty modeli **ChatGPT, Claude, Gemini oraz Grok**, oto najlepsza odpowiedź na Twoje pytanie:
+
+> **Pytanie:** *{user_input}*
+
+1. **Główny wniosek:** Wszystkie 4 modele są zgodne co do kluczowego punktu analizy.
+2. **Kluczowe szczegóły:** 
+   - **ChatGPT & Gemini** zwróciły uwagę na dokładną strukturę i fakty.
+   - **Claude** zadbał o przejrzyste przedstawienie wniosków.
+   - **Grok** wyłapał dodatkowy niuans, który wzbogacił odpowiedź.
+
+*To jest podgląd interfejsu. W następnym kroku podepniemy klucze API, aby generować prawdziwe odpowiedzi na żywo!*
+"""
+        st.markdown(mock_response)
+        
+        # Zapisz odpowiedź do historii
+        st.session_state.messages.append({"role": "assistant", "content": mock_response})
